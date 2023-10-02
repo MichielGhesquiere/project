@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SleepAnalyzer - Upload EDF File</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body style="background-color: #87CEFA;"> <!-- Light blue background color -->
+
+    <div id="loading-spinner" class="loader" style="display: none;"></div>
+
+    <!-- Add a banner image -->
+    <header style="background-color: rgba(0, 0, 139, 0.7);"> <!-- Dark blue header with 70% opacity -->
+        <img src="/static/sleep_banner.png" alt="Sleep Banner">
+        <h1 style="color: white;">Welcome to SleepAnalyzer!</h1>
+    </header>
+
+    <!-- Add some basic information on why it can be helpful and insightful to do sleep analysis from polysomnography data -->
+    <div class="intro" style="margin: 2% 5%; background-color: rgba(255, 255, 255, 0.9); padding: 2%; border-radius: 5px;">
+        <p><strong>Curious about what your sleep patterns reveal about you? You're at the right place!</strong></p>
+        <p>With our SleepAnalyzer tool, you can upload your polysomnography (PSG) recording and get instant insights into your sleep quality and patterns.</p>
+        <ul>
+            <li><strong>Easy to use:</strong> Just upload your EDF file and choose what kind of analysis you want.</li>
+            <li><strong>Comprehensive analysis:</strong> Get basic sleep statistics and/or a detailed hypnogram.</li>
+            <li><strong>Fast and reliable:</strong> Our tool uses artificial intelligence for quick and accurate results.</li>
+        </ul>
+        <p>Whether you're a patient, clinician, researcher, or just curious about sleep, SleepAnalyzer is here to help you achieve better sleep health.</p>
+    </div>
+
+    <div class="container" style="max-width: 95%; margin: 2% 5%; background-color: rgba(255, 255, 255, 0.9); padding: 2%; border-radius: 5px;">
+        <h2>Ready to explore your sleep data?</h2>
+        <form method="POST" enctype="multipart/form-data" action="{{ url_for('index') }}">
+            <label class="upload-label" for="file">Choose a File</label>
+            <input type="file" name="file" id="file" accept=".edf">
+            <br>
+            <label for="channel">Select EEG Channel:</label>
+            <select id="channel" name="channel">
+                {% for ch_name in raw_ch_names %}
+                <option value="{{ ch_name }}">{{ ch_name }}</option>
+                {% endfor %}
+            </select>
+            <br>
+            <br>
+            <label for="display_option">What do you want to analyze?</label>
+            <br>
+            <select id="display_option" name="display_option">
+                <option value="sleep_stats">Basic Sleep Statistics</option>
+                <option value="hypnogram">Hypnogram</option>
+                <option value="both">Both</option>
+            </select>
+            <br>
+            <input type="submit" value="Analyze">
+        </form>
+    </div>
+
+    <script>
+        // Show the loading spinner and message when the page starts loading
+        window.addEventListener("beforeunload", function () {
+          document.getElementById("loading-spinner").style.display = "block";
+          document.getElementById("loading-message").style.display = "block";
+        });
+      
+        // Hide the loading spinner and message when the page is fully loaded
+        window.addEventListener("load", function () {
+          document.getElementById("loading-spinner").style.display = "none";
+          document.getElementById("loading-message").style.display = "none";
+        });
+    </script>
+
+    <div id="loading-message" class="loading-message">Loading...</div>
+
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sleep Analysis Result</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div id="loading-spinner" class="loader" style="display: none;"></div>
+    <div class="container">
+        <h1>Sleep Analysis Result</h1>
+        {% if display_option == 'both' or display_option == 'hypnogram' %}
+        <h2>Hypnogram</h2>
+        <p>
+            The hypnogram below provides a visual representation of the sleep stages predicted by the AI throughout the night. A typical night of sleep consists of multiple sleep cycles, each lasting approximately 90 minutes.
+        </p>
+        <p>
+            Sleep cycles usually proceed from light sleep (N1 and N2) into deep sleep (N3), and then into REM (rapid eye movement) sleep. REM sleep is associated with vivid dreaming. It's normal to experience 4-5 sleep cycles during the night, with each cycle going through these stages.
+        </p>
+        <p>
+            A healthy hypnogram typically shows well-defined and evenly spaced sleep cycles, with a balanced distribution of sleep stages. Interruptions or irregularities in the cycles may indicate disruptions in sleep quality.
+        </p>
+        <img src="data:image/png;base64,{{ img_data }}" alt="Hypnogram">
+        {% endif %}
+        {% if display_option == 'both' or display_option == 'sleep_stats' %}
+        <h2>Sleep Statistics</h2>
+        <p>Here are the sleep statistics calculated from the analysis.</p>
+            <!-- 
+        Add more rows for other sleep statistics parameters, namely N1, N2, N3, REM, NREM, SOL 
+        * Time in Bed (TIB): total duration of the hypnogram.
+        * Sleep Period Time (SPT): duration from first to last period of sleep.
+        * Wake After Sleep Onset (WASO): duration of wake periods within SPT.
+        * Total Sleep Time (TST): total duration of N1 + N2 + N3 + REM sleep in SPT.
+        * Sleep Efficiency (SE): TST / TIB * 100 (%).
+        * Sleep Maintenance Efficiency (SME): TST / SPT * 100 (%).
+        * W, N1, N2, N3 and REM: sleep stages duration. NREM = N1 + N2 + N3.
+        * % (W, ... REM): sleep stages duration expressed in percentages of TST.
+        * Latencies: latencies of sleep stages from the beginning of the record.
+        * Sleep Onset Latency (SOL): Latency to first epoch of any sleep.
+        -->
+        <table>
+            <tr>
+                <th>Parameter</th>
+                <th>Value (min)</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>Time in Bed (TIB)</td>
+                <td>{{ sleep_stats['TIB']|custom_round }}</td>
+                <td>
+                    <button class="toggle-button" type="button" onclick="toggleDescription('tib')">&#9656;</button>
+                    <div id="tib-description" class="description">
+                        Total duration of the hypnogram. It includes both sleep and awake time. There is no fixed recommendation for TIB, but it should be consistent and match your sleep needs.
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>Sleep Period Time (SPT)</td>
+                <td>{{ sleep_stats['SPT']|custom_round }}</td>
+                <td>
+                    <button class="toggle-button" type="button" onclick="toggleDescription('spt')">&#9656;</button>
+                    <div id="spt-description" class="description">
+                        Duration from first to last period of sleep. It excludes any awake time before sleep onset or after final awakening. SPT should be close to TIB, indicating minimal wakefulness during the night.
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>Wake After Sleep Onset (WASO)</td>
+                <td>{{ sleep_stats['WASO']|custom_round }}</td>
+                <td>
+                    <button class="toggle-button" type="button" onclick="toggleDescription('waso')">&#9656;</button>
+                    <div id="waso-description" class="description">
+                        Duration of wake periods within SPT. Frequent or long wake periods could indicate disrupted sleep. WASO should be less than 30 minutes for optimal sleep quality.
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>Total Sleep Time (TST)</td>
+                <td>{{ sleep_stats['TST']|custom_round }}</td>
+                <td>
+                    <button class="toggle-button" type="button" onclick="toggleDescription('tst')">&#9656;</button>
+                    <div id="tst-description" class="description">
+                        Total duration of all sleep stages (N1 + N2 + N3 + REM) within SPT. It represents the actual amount of time spent sleeping. TST should be at least 7 hours for most adults, but may vary depending on individual factors.
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>Sleep Efficiency (SE)</td>
+                <td>{{ sleep_stats['SE']|custom_round }}</td>
+                <td>
+                    <button class="toggle-button" type="button" onclick="toggleDescription('se')">&#9656;</button>
+                    <div id="se-description" class="description">
+                        TST / TIB * 100 (%). It represents the percentage of time spent sleeping while in bed. A SE of 85% or higher is considered normal, while a SE above 90% is very good.
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>Sleep Maintenance Efficiency (SME)</td>
+                <td>{{ sleep_stats['SME']|custom_round }}</td>
+                <td>
+                    <button class="toggle-button" type="button" onclick="toggleDescription('sme')">&#9656;</button>
+                    <div id="sme-description" class="description">
+                        TST / SPT * 100 (%). It represents the percentage of time spent sleeping after initially falling asleep. A SME of 90% or higher is considered normal, while a SME above 95% is very good.
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>N1</td>
+                <td>{{ sleep_stats['N1']|custom_round }}</td>
+                <td>
+                    <button class="toggle-button" type="button" onclick="toggleDescription('n1')">&#9656;</button>
+                    <div id="n1-description" class="description">
+                        Duration of stage N1, the lightest stage of non-REM sleep. N1 should be less than 10% of TST, as it provides the least restorative benefits.
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>N2</td>
+                <td>{{ sleep_stats['N2']|custom_round }}</td>
+                <td>
+                    <button class="toggle-button" type="button" onclick="toggleDescription('n2')">&#9656;</button>
+                    <div id="n2-description" class="description">
+                        Duration of stage N2, the intermediate stage of non-REM sleep.
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>N3</td>
+                <td>{{ sleep_stats['N3']|custom_round }}</td>
+                <td>
+                    <button class="toggle-button" type="button" onclick="toggleDescription('n3')">&#9656;</button>
+                    <div id="n3-description" class="description">
+                        Duration of stage N3, the deepest stage of non-REM sleep. N3 should be around 20% of TST, as it provides the most restorative and rejuvenating benefits.
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>REM</td>
+                <td>{{ sleep_stats['REM']|custom_round }}</td>
+                <td>
+                    <button class="toggle-button" type="button" onclick="toggleDescription('rem')">&#9656;</button>
+                    <div id="rem-description" class="description">
+                        Duration of REM sleep, the stage associated with dreaming. REM should be around 20% of TST, as it provides the most restorative and rejuvenating benefits.
+                    </div>
+                </td>
+        </tr>
+    </table>
+
+    <h2>Sleep Stage Percentage</h2>
+    <p>The chart below displays the percentage of time spent in each sleep stage.</p>
+    <img src="data:image/png;base64,{{ sleep_stage_percentage_img }}" alt="Sleep Stage Percentage">
+    
+    <p>
+        <strong>REM</strong> stands for rapid eye movement. In REM sleep, your muscles are relaxed but your brain is active. REM sleep restores your mind, and enhances memory and learning. This is the stage when dreaming mostly occurs. Most REM sleep occurs during the second half of the night. The amount of REM sleep is on average about 21% of sleep time for adults.
+    </p>
+    <p>
+        <strong>Deep sleep (N3)</strong> is the stage of sleep when it's hardest to be woken up. This sleep stage restores your body, supports your immune system, and affects muscle growth. It also affects certain aspects of memory and learning. Most deep sleep occurs during the first half of the night. On average, deep sleep accounts for about 15% of sleep time for adults.
+    </p>
+    <p>
+        <strong>Light sleep (N1 + N2)</strong> serves as a transition stage between wakefulness and the deeper stages of sleep. You can be easily awoken from light sleep since your responsiveness to environmental stimuli remains quite high. Light sleep also promotes mental and physical recovery, although REM and deep sleep are the most important sleep stages in that regard.
+    </p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+  // Show the loading spinner when the page starts loading
+  window.addEventListener("beforeunload", function () {
+    document.getElementById("loading-spinner").style.display = "block";
+  });
+
+  // Hide the loading spinner when the page is fully loaded
+  window.addEventListener("load", function () {
+    document.getElementById("loading-spinner").style.display = "none";
+  });
+</script>
+
+<script>
+    function toggleDescription(param) {
+        var description = document.getElementById(param + '-description');
+        var button = document.querySelector('button.toggle-button[onclick="toggleDescription(\'' + param + '\')"]');
+        if (description.style.display === 'none' || description.style.display === '') {
+            description.style.display = 'block';
+            button.innerHTML = '&#9662;';  // Down arrow
+        } else {
+            description.style.display = 'none';
+            button.innerHTML = '&#9656;';  // Right arrow
+        }
+    }
+</script>
+</body>
+</html>

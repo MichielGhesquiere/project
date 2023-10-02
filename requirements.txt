@@ -1,0 +1,6 @@
+Flask
+mne
+yasa
+matplotlib
+werkzeug
+jinja2
